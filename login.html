@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinguaQuest — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --accent: #7c5cfc;
+    --accent2: #fc5c7d;
+    --accent3: #5cf8c0;
+    --accent4: #fcb45c;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --gold: #ffd700;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Animated background orbs */
+  .bg-orbs {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: drift 12s ease-in-out infinite;
+  }
+  .orb-1 {
+    width: 500px; height: 500px;
+    background: var(--accent);
+    top: -150px; left: -100px;
+    animation-delay: 0s;
+  }
+  .orb-2 {
+    width: 400px; height: 400px;
+    background: var(--accent2);
+    bottom: -100px; right: -80px;
+    animation-delay: -4s;
+  }
+  .orb-3 {
+    width: 300px; height: 300px;
+    background: var(--accent3);
+    top: 50%; left: 60%;
+    animation-delay: -8s;
+    opacity: 0.08;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.05); }
+    66% { transform: translate(-20px, 30px) scale(0.95); }
+  }
+
+  /* Layout */
+  .login-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Left panel — branding */
+  .brand-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    position: relative;
+    display: none;
+  }
+  @media (min-width: 900px) {
+    .brand-panel { display: flex; }
+  }
+
+  .brand-tagline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .brand-tagline .grad {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .brand-desc {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 380px;
+    margin-bottom: 48px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 24px;
+  }
+  .stat-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+
+  /* Achievement badges */
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 40px;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--muted);
+    animation: float 3s ease-in-out infinite;
+  }
+  .badge:nth-child(2) { animation-delay: -1s; }
+  .badge:nth-child(3) { animation-delay: -2s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Right panel — form */
+  .form-panel {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px 32px;
+  }
+  @media (min-width: 900px) {
+    .form-panel {
+      border-left: 1px solid var(--border);
+      background: rgba(19,19,26,0.6);
+      backdrop-filter: blur(20px);
+    }
+  }
+
+  /* Logo */
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  .form-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .form-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  /* Social login */
+  .social-btns {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .social-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .social-btn:hover {
+    background: var(--surface);
+    border-color: rgba(124,92,252,0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form fields */
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .field-wrap {
+    position: relative;
+  }
+  .field-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px 12px 42px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    outline: none;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(124,92,252,0.12);
+  }
+  .field input::placeholder { color: var(--muted); }
+
+  /* Password toggle */
+  .toggle-pw {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .toggle-pw:hover { color: var(--text); }
+
+  /* Row: remember + forgot */
+  .form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .remember input[type="checkbox"] {
+    appearance: none;
+    width: 16px; height: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .remember input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .remember input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -1px; left: 2px;
+    font-size: 11px;
+    color: white;
+    font-weight: 700;
+  }
+  .forgot-link {
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .forgot-link:hover { opacity: 0.7; }
+
+  /* Error message */
+  .error-msg {
+    display: none;
+    background: rgba(252,92,125,0.1);
+    border: 1px solid rgba(252,92,125,0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    animation: shake 0.4s ease;
+  }
+  .error-msg.show { display: flex; align-items: center; gap: 8px; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  /* Submit button */
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--accent), #9b7dff);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .btn-submit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,92,252,0.4); }
+  .btn-submit:hover::after { opacity: 1; }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit.loading { opacity: 0.7; pointer-events: none; }
+  .btn-submit .spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin: 0 auto;
+  }
+  .btn-submit.loading .btn-text { display: none; }
+  .btn-submit.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Sign up link */
+  .signup-row {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .signup-row a {
+    color: var(--accent3);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .signup-row a:hover { opacity: 0.7; }
+
+  /* Guest mode */
+  .guest-link {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 16px;
+    transition: color 0.2s;
+  }
+  .guest-link:hover { color: var(--text); }
+
+  /* XP bar at top */
+  .xp-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    background-size: 200%;
+    animation: shimmer 3s linear infinite;
+    z-index: 100;
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  /* Success overlay */
+  .success-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .success-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .success-icon { font-size: 64px; animation: pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  .success-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .success-sub { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="xp-banner"></div>
+
+<div class="login-wrapper">
+
+  <!-- Left branding panel (desktop only) -->
+  <div class="brand-panel">
+    <div class="logo">LinguaQuest</div>
+    <div class="logo-sub">Gamified Learning Platform</div>
+
+    <div class="brand-tagline">
+      Level up your<br>
+      <span class="grad">language skills</span><br>
+      every day.
+    </div>
+    <p class="brand-desc">
+      Earn XP, unlock achievements, and compete with learners worldwide. Your streak is waiting — don't break the chain.
+    </p>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">2.4M+</div>
+        <div class="stat-label">Learners</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">48</div>
+        <div class="stat-label">Languages</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">99%</div>
+        <div class="stat-label">Keep streak</div>
+      </div>
+    </div>
+
+    <div class="badge-row">
+      <div class="badge">🔥 Daily streaks</div>
+      <div class="badge">🏆 Leaderboards</div>
+      <div class="badge">⚡ XP rewards</div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="form-panel">
+    <div class="logo" style="display:block">LinguaQuest</div>
+    <div class="logo-sub">Gamified Learning Platform</div>
+
+    <div class="form-title">Welcome back</div>
+    <p class="form-subtitle">Sign in to continue your streak 🔥</p>
+
+    <!-- Social login -->
+    <div class="social-btns">
+      <button class="social-btn" onclick="handleSocial('Google')">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.198 2.698 1.24 6.65l4.026 3.115Z"/><path fill="#34A853" d="M16.04 18.013c-1.09.703-2.474 1.078-4.04 1.078a7.077 7.077 0 0 1-6.723-4.823l-4.04 3.067A11.965 11.965 0 0 0 12 24c2.933 0 5.735-1.043 7.834-3l-3.793-2.987Z"/><path fill="#4A90E2" d="M19.834 21c2.195-2.048 3.62-5.096 3.62-9 0-.71-.109-1.473-.272-2.182H12v4.637h6.436c-.317 1.559-1.17 2.766-2.395 3.558L19.834 21Z"/><path fill="#FBBC05" d="M5.277 14.268A7.12 7.12 0 0 1 4.909 12c0-.782.125-1.533.357-2.235L1.24 6.65A11.934 11.934 0 0 0 0 12c0 1.92.445 3.73 1.237 5.335l4.04-3.067Z"/></svg>
+        Google
+      </button>
+      <button class="social-btn" onclick="handleSocial('GitHub')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </button>
+    </div>
+
+    <div class="divider">or continue with email</div>
+
+    <!-- Error message -->
+    <div class="error-msg" id="errorMsg">
+      <span>⚠️</span>
+      <span id="errorText">Invalid email or password. Please try again.</span>
+    </div>
+
+    <!-- Email field -->
+    <div class="field">
+      <label>Email</label>
+      <div class="field-wrap">
+        <span class="field-icon">✉</span>
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <!-- Password field -->
+    <div class="field">
+      <label>Password</label>
+      <div class="field-wrap">
+        <span class="field-icon">🔒</span>
+        <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
+        <button class="toggle-pw" onclick="togglePassword()" id="toggleBtn" title="Show/hide password">👁</button>
+      </div>
+    </div>
+
+    <!-- Remember + forgot -->
+    <div class="form-row">
+      <label class="remember">
+        <input type="checkbox" id="rememberMe"> Remember me
+      </label>
+      <a href="#" class="forgot-link" onclick="handleForgot(event)">Forgot password?</a>
+    </div>
+
+    <!-- Submit -->
+    <button class="btn-submit" id="submitBtn" onclick="handleLogin()">
+      <span class="btn-text">Sign In → Continue Streak</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="signup-row">
+      New to LinguaQuest? <a href="learning-platform.html">Create your account</a>
+    </div>
+
+    <a href="learning-platform.html" class="learning-platform.html">Continue as guest →</a>
+  </div>
+
+</div>
+
+<!-- Success overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">🔥</div>
+  <div class="success-text">Streak restored!</div>
+  <div class="success-sub">Redirecting to your dashboard…</div>
+</div>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const btn = document.getElementById('toggleBtn');
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    document.getElementById('errorText').textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    const btn = document.getElementById('submitBtn');
+
+    // Basic validation
+    if (!email) { showError('Please enter your email address.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
+    if (!password) { showError('Please enter your password.'); return; }
+    if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
+
+    // Simulate loading
+    btn.classList.add('loading');
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      // Show success and redirect
+      document.getElementById('successOverlay').classList.add('show');
+      setTimeout(() => {
+        window.location.href = 'learning-platform.html';
+      }, 1800);
+    }, 1200);
+  }
+
+  function handleSocial(provider) {
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('loading');
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      document.getElementById('successOverlay').classList.add('show');
+      setTimeout(() => { window.location.href = 'learning-platform.html'; }, 1800);
+    }, 1000);
+  }
+
+  function handleForgot(e) {
+    e.preventDefault();
+    showError('📧 Password reset link sent! Check your inbox.');
+    document.getElementById('errorMsg').style.background = 'rgba(92,248,192,0.08)';
+    document.getElementById('errorMsg').style.borderColor = 'rgba(92,248,192,0.3)';
+    document.getElementById('errorMsg').style.color = 'var(--accent3)';
+    setTimeout(() => {
+      document.getElementById('errorMsg').style = '';
+    }, 4200);
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+</script>
+</body>
+</html>
